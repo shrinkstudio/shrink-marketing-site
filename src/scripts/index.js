@@ -1,5 +1,5 @@
 // -----------------------------------------
-// TEMPLATE_PROJECT_NAME — Single entry point
+// shrink-marketing-site — Single entry point
 // Import all scripts here in the order they should run.
 // -----------------------------------------
 

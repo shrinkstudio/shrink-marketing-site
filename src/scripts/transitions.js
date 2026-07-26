@@ -1,5 +1,5 @@
 // -----------------------------------------
-// TEMPLATE_PROJECT_NAME — PAGE TRANSITIONS
+// shrink-marketing-site — PAGE TRANSITIONS
 // Barba.js + GSAP + Lenis
 // -----------------------------------------
 
@@ -12,7 +12,26 @@ import { initModalDelegation, initModals, destroyModals } from './modal.js';
 import { initFontSizeDetect, initFooterYear, initSkipLink } from './utilities.js';
 import { initNavScrollHide, destroyNavScrollHide } from './nav.js';
 import { initFormValidation, destroyFormValidation } from './form-validate.js';
-import { initCopyLink, destroyCopyLink } from './copy-link.js';
+import { initCopyClip, destroyCopyClip } from './copy-clip.js';
+
+// --- Ported from shrink-studio-site (Shrink signature modules) ---
+import { initMegaNav, destroyMegaNav } from './mega-nav.js';
+import { initNavTheme, destroyNavTheme } from './nav-theme.js';
+import { initCmsNest, destroyCmsNest } from './cms-nest.js';
+import { initContentReveal, destroyContentReveal } from './content-reveal.js';
+import { initSplitText, destroySplitText } from './split-text.js';
+import { initWordScatter, destroyWordScatter } from './word-scatter.js';
+import { initProjectList, destroyProjectList } from './project-list.js';
+import { initProjectsListing, destroyProjectsListing } from './projects-listing.js';
+import { initTOC, destroyTOC } from './toc.js';
+import { initMagneticButtons, destroyMagneticButtons } from './magnetic-button.js';
+import { initHoverList, destroyHoverList } from './hover-list.js';
+import { initStackingCards, destroyStackingCards } from './stacking-cards.js';
+import { initParallax, destroyParallax } from './parallax.js';
+import { initFooterParallax, destroyFooterParallax } from './footer-parallax.js';
+import { initTestimonialSlider, destroyTestimonialSlider } from './testimonial-slider.js';
+import { initGsapSliders, destroyGsapSliders } from './gsap-slider.js';
+import { initCurrentTime, destroyCurrentTime } from './current-time.js';
 
 gsap.registerPlugin(CustomEase);
 if (typeof ScrollTrigger !== 'undefined') gsap.registerPlugin(ScrollTrigger);
@@ -35,8 +54,8 @@ const has = (s) => !!nextPage.querySelector(s);
 let staggerDefault = 0.05;
 let durationDefault = 0.6;
 
-CustomEase.create("TEMPLATE_CUSTOM_EASE_NAME", "TEMPLATE_CUSTOM_EASE_VALUE");
-gsap.defaults({ ease: "TEMPLATE_CUSTOM_EASE_NAME", duration: durationDefault });
+CustomEase.create("shrink", "0.65, 0.05, 0, 1");
+gsap.defaults({ ease: "shrink", duration: durationDefault });
 
 
 // -----------------------------------------
@@ -52,7 +71,6 @@ function initOnceFunctions() {
   initModalDelegation();
   initFontSizeDetect();
   initSkipLink();
-  initCopyLink();
 }
 
 function initBeforeEnterFunctions(next) {
@@ -66,6 +84,26 @@ function initBeforeEnterFunctions(next) {
   destroyInlineVideos();
   destroyModals();
   destroyFormValidation();
+  destroyCopyClip();
+
+  // Ported modules
+  destroyMegaNav();
+  destroyNavTheme();
+  destroyCmsNest();
+  destroyContentReveal();
+  destroySplitText();
+  destroyWordScatter();
+  destroyProjectList();
+  destroyProjectsListing();
+  destroyTOC();
+  destroyMagneticButtons();
+  destroyHoverList();
+  destroyStackingCards();
+  destroyParallax();
+  destroyFooterParallax();
+  destroyTestimonialSlider();
+  destroyGsapSliders();
+  destroyCurrentTime();
 }
 
 function initAfterEnterFunctions(next) {
@@ -80,6 +118,26 @@ function initAfterEnterFunctions(next) {
   if (has('dialog'))                        initModals(nextPage);
   if (has('[data-form-validate]'))          initFormValidation(nextPage);
   if (has('[data-footer-year]'))            initFooterYear(nextPage);
+  if (has('[data-copy="trigger"]'))         initCopyClip(nextPage);
+
+  // --- Ported modules ---
+  if (has('[data-menu-wrap]'))              initMegaNav(nextPage);
+  if (has('[data-section-theme]'))          initNavTheme(nextPage);
+  if (has('[data-nest="target"]'))          initCmsNest(nextPage);
+  if (has('[data-reveal-group]'))           initContentReveal(nextPage);
+  if (has('[data-split="heading"]'))        initSplitText(nextPage);
+  if (has('[data-highlight-text]'))         initWordScatter(nextPage);
+  if (has('[data-project-list]'))           initProjectList(nextPage);
+  if (has('.projects-listing__item'))       initProjectsListing(nextPage);
+  if (has('[data-toc-list]'))               initTOC(nextPage);
+  if (has('[data-magnetic-strength]'))      initMagneticButtons(nextPage);
+  if (has('[data-hover-list]'))             initHoverList(nextPage);
+  if (has('[data-stacking-cards-item]'))    initStackingCards(nextPage);
+  if (has('[data-parallax="trigger"]'))     initParallax(nextPage);
+  if (has('[data-footer-parallax]'))        initFooterParallax(nextPage);
+  if (has('[data-testimonial-wrap]'))       initTestimonialSlider(nextPage);
+  if (has('[data-gsap-slider-init]'))       initGsapSliders(nextPage);
+  if (has('[data-current-time]'))           initCurrentTime(nextPage);
 
   // Re-evaluate inline scripts inside the new container (Webflow embeds)
   reinitScripts(nextPage);
@@ -247,7 +305,7 @@ function initLenis() {
     wheelMultiplier: 1.25,
   });
 
-  window.TEMPLATE_LENIS_GLOBAL = lenis;
+  window.__shrinkLenis = lenis;
 
   if (hasScrollTrigger) {
     lenis.on("scroll", ScrollTrigger.update);
