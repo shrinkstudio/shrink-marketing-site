@@ -223,8 +223,18 @@ class ListInstance {
     if (useFlip) {
       // GSAP Flip: snapshot positions, apply the filter, then animate the
       // survivors sliding to their new spots while entering/leaving items fade.
+      const container = this.itemsWrap;
+      const startH = container.offsetHeight;
       const state = Flip.getState(this.records.map((r) => r.el));
       this.records.forEach((r) => this._setStatus(r.el, visibleSet.has(r.el) ? 'active' : 'not-active'));
+      const endH = container.offsetHeight;
+      // Animate the container height too — Flip absolutely-positions items mid-tween,
+      // which would collapse the list height and make the footer jump.
+      gsap.killTweensOf(container);
+      gsap.fromTo(container, { height: startH }, {
+        height: endH, duration: 0.5, ease: 'power2.inOut',
+        onComplete: () => { container.style.removeProperty('height'); },
+      });
       Flip.from(state, {
         duration: 0.5,
         ease: 'power2.inOut',
