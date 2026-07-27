@@ -6,7 +6,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const srcDir = path.join(__dirname, 'src', 'scripts');
 const watch = process.argv.includes('--watch');
 
-const entryPoints = [path.join(srcDir, 'index.js')];
+const entryPoints = {
+  'index': path.join(srcDir, 'index.js'),
+  'list-filter': path.join(srcDir, 'list-filter.standalone.js'),
+};
 
 const buildOptions = {
   entryPoints,
@@ -26,7 +29,7 @@ async function run() {
     console.log('Watching for changes...');
   } else {
     await esbuild.build(buildOptions);
-    console.log(`Built ${entryPoints.length} file(s) to dist/`);
+    console.log(`Built ${Object.keys(entryPoints).length} file(s) to dist/`);
   }
 }
 
