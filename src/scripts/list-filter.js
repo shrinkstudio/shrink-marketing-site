@@ -47,6 +47,7 @@ class ListInstance {
     this.empty = root.querySelector('[data-list-empty]');
     this.countEl = root.querySelector('[data-list-count]');
     this.moreBtn = root.querySelector('[data-list-more]');
+    this.clearBtn = root.querySelector('[data-list-clear]');
 
     // --- Build item records once ---
     this.records = [...this.itemsWrap.querySelectorAll('[data-list-item]')].map((el) => ({
@@ -63,6 +64,7 @@ class ListInstance {
 
     this._bind();
     this.apply(false);
+    this._syncClear();
   }
 
   // Tags: explicit data-list-tags, or auto-collected from [data-list-tag] children
@@ -91,6 +93,11 @@ class ListInstance {
   _bind() {
     // Delegated clicks: filter buttons + load-more
     this._onClick = (e) => {
+      if (this.clearBtn && e.target.closest('[data-list-clear]')) {
+        e.preventDefault();
+        this._clearSearch();
+        return;
+      }
       const btn = e.target.closest('[data-list-filter]');
       if (btn && this.root.contains(btn)) {
         e.preventDefault(); // in Webflow these are <a> Buttons — don't let href jump the page
@@ -110,6 +117,7 @@ class ListInstance {
     // Search input (light debounce for larger lists like the Glossary)
     if (this.input) {
       this._onInput = () => {
+        this._syncClear(); // show/hide the X immediately as you type
         clearTimeout(this._debounce);
         this._debounce = setTimeout(() => {
           this.query = (this.input.value || '').trim().toLowerCase();
@@ -118,6 +126,15 @@ class ListInstance {
         }, 120);
       };
       this.input.addEventListener('input', this._onInput);
+
+      // Escape clears the search
+      this._onKeydown = (e) => {
+        if (e.key === 'Escape' && this.input.value) {
+          e.preventDefault();
+          this._clearSearch();
+        }
+      };
+      this.input.addEventListener('keydown', this._onKeydown);
 
       // Webflow inputs live inside a <form> — stop Enter from reloading the page
       this.form = this.input.closest('form');
@@ -173,6 +190,22 @@ class ListInstance {
     if (!this.query) return true;
     // every query token must appear somewhere in the item's searchable text
     return this.query.split(/\s+/).every((tok) => rec.search.includes(tok));
+  }
+
+  // Clear (X) button — shown only while the input has a value; hiding preserves the CSS display type
+  _syncClear() {
+    if (!this.clearBtn) return;
+    this.clearBtn.style.display = this.input && this.input.value ? '' : 'none';
+  }
+
+  _clearSearch() {
+    clearTimeout(this._debounce);
+    if (this.input) this.input.value = '';
+    this.query = '';
+    this.page = 1;
+    this.apply(true);
+    this._syncClear();
+    if (this.input) this.input.focus();
   }
 
   apply(animate) {
@@ -253,6 +286,7 @@ class ListInstance {
   destroy() {
     this.root.removeEventListener('click', this._onClick);
     if (this.input && this._onInput) this.input.removeEventListener('input', this._onInput);
+    if (this.input && this._onKeydown) this.input.removeEventListener('keydown', this._onKeydown);
     if (this.form && this._onSubmit) this.form.removeEventListener('submit', this._onSubmit);
     clearTimeout(this._debounce);
     this.records.forEach((r) => { if (r.timer) clearTimeout(r.timer); });
