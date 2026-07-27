@@ -48,6 +48,7 @@ class ListInstance {
     this.countEl = root.querySelector('[data-list-count]');
     this.moreBtn = root.querySelector('[data-list-more]');
     this.clearBtn = root.querySelector('[data-list-clear]');
+    this.activeClass = root.getAttribute('data-list-active-class'); // optional class toggled on active filter buttons
 
     // --- Build item records once ---
     this.records = [...this.itemsWrap.querySelectorAll('[data-list-item]')].map((el) => ({
@@ -259,6 +260,7 @@ class ListInstance {
         btn.setAttribute('data-list-status', on ? 'active' : 'not-active');
         btn.setAttribute('aria-pressed', on ? 'true' : 'false');
       }
+      if (this.activeClass) btn.classList.toggle(this.activeClass, on);
     });
   }
 
