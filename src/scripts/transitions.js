@@ -36,6 +36,7 @@ import { initListFilter, destroyListFilter } from './list-filter.js';
 
 gsap.registerPlugin(CustomEase);
 if (typeof ScrollTrigger !== 'undefined') gsap.registerPlugin(ScrollTrigger);
+if (typeof Flip !== 'undefined') gsap.registerPlugin(Flip);
 
 history.scrollRestoration = "manual";
 

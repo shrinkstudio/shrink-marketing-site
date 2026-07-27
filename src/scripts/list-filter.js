@@ -217,7 +217,26 @@ class ListInstance {
     if (this.pageSize > 0) visible = matched.slice(0, this.page * this.pageSize);
     const visibleSet = new Set(visible.map((r) => r.el));
 
-    this.records.forEach((r) => this._setVisible(r, visibleSet.has(r.el), animate));
+    const useFlip = animate && !this.reduced &&
+      typeof Flip !== 'undefined' && typeof gsap !== 'undefined' && this.records.length > 0;
+
+    if (useFlip) {
+      // GSAP Flip: snapshot positions, apply the filter, then animate the
+      // survivors sliding to their new spots while entering/leaving items fade.
+      const state = Flip.getState(this.records.map((r) => r.el));
+      this.records.forEach((r) => this._setStatus(r.el, visibleSet.has(r.el) ? 'active' : 'not-active'));
+      Flip.from(state, {
+        duration: 0.5,
+        ease: 'power2.inOut',
+        absolute: true,
+        onEnter: (els) => gsap.fromTo(els, { opacity: 0, scale: 0.92 },
+          { opacity: 1, scale: 1, duration: 0.4, ease: 'power2.out' }),
+        onLeave: (els) => gsap.to(els, { opacity: 0, scale: 0.92, duration: 0.35, ease: 'power2.in' }),
+      });
+    } else {
+      // No Flip/gsap, or first load / reduced motion: CSS state-machine fallback.
+      this.records.forEach((r) => this._setVisible(r, visibleSet.has(r.el), animate));
+    }
     this._paintButtons();
     this._paintEmpty(matched.length);
     this._paintCount(visible.length, matched.length);
