@@ -263,6 +263,10 @@ barba.init({
 
       async once(data) {
         initOnceFunctions();
+        // Barba's `once` does NOT fire the enter hooks, so the per-page modules
+        // (list-filter, accordion, sliders…) must be initialised here too —
+        // otherwise they never run on first load, only after a navigation.
+        initAfterEnterFunctions(data.next.container);
         return runPageOnceAnimation(data.next.container);
       },
 
