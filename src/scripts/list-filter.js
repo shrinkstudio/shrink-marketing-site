@@ -116,6 +116,13 @@ class ListInstance {
         }, 120);
       };
       this.input.addEventListener('input', this._onInput);
+
+      // Webflow inputs live inside a <form> — stop Enter from reloading the page
+      this.form = this.input.closest('form');
+      if (this.form) {
+        this._onSubmit = (e) => e.preventDefault();
+        this.form.addEventListener('submit', this._onSubmit);
+      }
     }
   }
 
@@ -244,6 +251,7 @@ class ListInstance {
   destroy() {
     this.root.removeEventListener('click', this._onClick);
     if (this.input && this._onInput) this.input.removeEventListener('input', this._onInput);
+    if (this.form && this._onSubmit) this.form.removeEventListener('submit', this._onSubmit);
     clearTimeout(this._debounce);
     this.records.forEach((r) => { if (r.timer) clearTimeout(r.timer); });
     this.records = [];
