@@ -32,6 +32,7 @@ import { initFooterParallax, destroyFooterParallax } from './footer-parallax.js'
 import { initTestimonialSlider, destroyTestimonialSlider } from './testimonial-slider.js';
 import { initGsapSliders, destroyGsapSliders } from './gsap-slider.js';
 import { initCurrentTime, destroyCurrentTime } from './current-time.js';
+import { initListFilter, destroyListFilter } from './list-filter.js';
 
 gsap.registerPlugin(CustomEase);
 if (typeof ScrollTrigger !== 'undefined') gsap.registerPlugin(ScrollTrigger);
@@ -104,6 +105,7 @@ function initBeforeEnterFunctions(next) {
   destroyTestimonialSlider();
   destroyGsapSliders();
   destroyCurrentTime();
+  destroyListFilter();
 }
 
 function initAfterEnterFunctions(next) {
@@ -138,6 +140,7 @@ function initAfterEnterFunctions(next) {
   if (has('[data-testimonial-wrap]'))       initTestimonialSlider(nextPage);
   if (has('[data-gsap-slider-init]'))       initGsapSliders(nextPage);
   if (has('[data-current-time]'))           initCurrentTime(nextPage);
+  if (has('[data-list]'))                    initListFilter(nextPage);
 
   // Re-evaluate inline scripts inside the new container (Webflow embeds)
   reinitScripts(nextPage);
