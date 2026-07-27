@@ -93,12 +93,14 @@ class ListInstance {
     this._onClick = (e) => {
       const btn = e.target.closest('[data-list-filter]');
       if (btn && this.root.contains(btn)) {
+        e.preventDefault(); // in Webflow these are <a> Buttons — don't let href jump the page
         this._toggleTag(btn.getAttribute('data-list-filter'));
         this.page = 1;
         this.apply(true);
         return;
       }
       if (this.moreBtn && e.target.closest('[data-list-more]')) {
+        e.preventDefault();
         this.page += 1;
         this.apply(true);
       }
