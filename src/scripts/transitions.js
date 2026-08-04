@@ -199,7 +199,12 @@ function runPageLeaveAnimation(current, next) {
   tl.fromTo(transitionPanel, { yPercent: 0 }, { yPercent: -100, duration: 1 }, 0);
   tl.fromTo(transitionPanelTop, { scaleY: 0 }, { scaleY: 1, duration: 1 }, "<");
   tl.fromTo(transitionLogoPath, { yPercent: 105 }, { yPercent: 0, duration: 0.8, ease: "expo.out", stagger: { amount: 0.06 } }, "<+=0.4");
-  tl.fromTo(current, { y: "0vh" }, { y: "-15dvh", duration: 1 }, 0);
+
+  // Outgoing page eases up GENTLY behind the cover — power2.inOut so it drifts
+  // up rather than snapping with the panel, and only -10dvh so it doesn't lurch.
+  // (Ported from Buff Motion's tuned leave; the panel/logo choreography above is
+  // Shrink's own and left untouched.)
+  tl.fromTo(current, { y: "0vh" }, { y: "-10dvh", duration: 1, ease: "power2.inOut" }, 0);
 
   return tl;
 }
@@ -234,7 +239,16 @@ function runPageEnterAnimation(next) {
   tl.fromTo(transitionPanelBottom, { scaleY: 1 }, { scaleY: 0, duration: 1 }, "<");
   tl.set(transitionPanel, { autoAlpha: 0 }, ">");
   tl.to(transitionLogoPath, { yPercent: -130, duration: 1.2, ease: "expo.inOut", stagger: { amount: -0.06 } }, "startEnter-=0.4");
-  tl.from(next, { y: "25dvh", duration: 1 }, "startEnter");
+
+  // New page rises gently with power3.inOut (decelerates to a soft stop — no snap),
+  // started +0.15s AFTER the panel begins its exit so the rise OVERLAPS the panel's
+  // tail and the ease plays out in the open: the page is visibly settling JUST as
+  // the panel clears, not lurching a beat later. Distance kept small (7dvh) so it
+  // reads as a settle, not a jump. (Was y:25dvh with the default ease starting in
+  // lockstep with the panel — the quarter-screen lurch behind the reported jank.)
+  const PAGE_RISE_DUR = 0.9;
+  const PAGE_RISE_DELAY = 0.15;
+  tl.from(next, { y: "7dvh", duration: PAGE_RISE_DUR, ease: "power3.inOut" }, `startEnter+=${PAGE_RISE_DELAY}`);
 
   tl.add("pageReady");
   tl.call(resetPage, [next], "pageReady");
@@ -363,7 +377,19 @@ function initLenis() {
 
 function resetPage(container) {
   window.scrollTo(0, 0);
-  gsap.set(container, { clearProps: "position,top,left,right" });
+  gsap.set(container, {
+    clearProps: "position,top,left,right,transform,translate,x,y,xPercent,yPercent,scale,rotate"
+  });
+
+  // Belt-and-braces (from Buff): clearProps zeros transforms but can leave an
+  // identity `transform: translate(0,0)` inline rather than removing it. Per CSS
+  // spec ANY transform other than `none` (identity included) makes the element a
+  // containing block for position:fixed descendants — which is what leaks the
+  // fixed nav / transition panel onto the container on the NEXT navigation.
+  // Force-remove so the container returns to a truly transform-less state.
+  ['transform', 'translate', 'scale', 'rotate'].forEach(prop => {
+    container.style.removeProperty(prop);
+  });
 
   if (hasLenis) {
     lenis.resize();
