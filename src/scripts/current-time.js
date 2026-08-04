@@ -54,9 +54,9 @@ export function initCurrentTime(scope) {
         var secondsElem = element.querySelector('[data-current-time-seconds]');
         var timezoneElem = element.querySelector('[data-current-time-timezone]');
 
-        if (hoursElem) hoursElem.textContent = timeParts.hours;
-        if (minutesElem) minutesElem.textContent = timeParts.minutes;
-        if (secondsElem) secondsElem.textContent = timeParts.seconds;
+        if (hoursElem) hoursElem.textContent = formatNumber(timeParts.hours);
+        if (minutesElem) minutesElem.textContent = formatNumber(timeParts.minutes);
+        if (secondsElem) secondsElem.textContent = formatNumber(timeParts.seconds);
         if (timezoneElem) timezoneElem.textContent = timeParts.timezone;
       }
     });
