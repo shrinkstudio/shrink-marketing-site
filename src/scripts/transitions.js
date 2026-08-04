@@ -320,12 +320,20 @@ barba.init({
         return runPageOnceAnimation(data.next.container);
       },
 
+      // --- PAGE TRANSITION PARKED (temporary) -----------------------------
+      // The panel-rise transition is disabled while we build out the pages;
+      // we'll redo the whole transition at the end. For now navigation swaps
+      // INSTANTLY — every per-page module still inits via the afterEnter hook,
+      // and resetPage clears the fixed-positioning beforeEnter applies. To
+      // restore, uncomment the runPage* calls and delete the instant lines.
       async leave(data) {
-        return runPageLeaveAnimation(data.current.container, data.next.container);
+        data.current.container.remove();
+        // return runPageLeaveAnimation(data.current.container, data.next.container);
       },
 
       async enter(data) {
-        return runPageEnterAnimation(data.next.container);
+        resetPage(data.next.container);
+        // return runPageEnterAnimation(data.next.container);
       }
     }
   ],
