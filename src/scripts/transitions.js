@@ -281,12 +281,9 @@ function initNoBarba() {
   initOnceFunctions();                                        // Lenis + doc-level delegation
   initAfterEnterFunctions(document, { reinitEmbeds: false }); // all modules, scoped to document
 }
-
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initNoBarba);
-} else {
-  initNoBarba();
-}
+// NOTE: the actual boot call lives at the very BOTTOM of this file — it must run
+// after every helper const (themeConfig etc.) has been assigned, otherwise
+// applyThemeFrom reads an undefined themeConfig and the whole boot throws.
 
 /* --- BARBA PARKED — restore this block (and remove initNoBarba above) to re-enable page transitions ---
 barba.hooks.beforeEnter(data => {
@@ -452,4 +449,15 @@ function initBarbaNavUpdate(data) {
     var newClassList = next.getAttribute('class') || '';
     curr.setAttribute('class', newClassList);
   });
+}
+
+
+// -----------------------------------------
+// BOOT (Barba disabled) — MUST be last: every helper const above is now
+// assigned, so applyThemeFrom() can read themeConfig safely.
+// -----------------------------------------
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initNoBarba);
+} else {
+  initNoBarba();
 }
