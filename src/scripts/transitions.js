@@ -37,7 +37,9 @@ gsap.registerPlugin(CustomEase);
 if (typeof ScrollTrigger !== 'undefined') gsap.registerPlugin(ScrollTrigger);
 if (typeof Flip !== 'undefined') gsap.registerPlugin(Flip);
 
-history.scrollRestoration = "manual";
+// Barba is disabled for now, so let the browser restore scroll on back/forward.
+// (Set back to "manual" when Barba/transitions are restored.)
+history.scrollRestoration = "auto";
 
 let lenis = null;
 let nextPage = document;
@@ -108,7 +110,7 @@ function initBeforeEnterFunctions(next) {
   destroyListFilter();
 }
 
-function initAfterEnterFunctions(next) {
+function initAfterEnterFunctions(next, { reinitEmbeds = true } = {}) {
   nextPage = next || document;
 
   if (has('.nav'))                          initNavScrollHide(nextPage);
@@ -141,8 +143,10 @@ function initAfterEnterFunctions(next) {
   if (has('[data-current-time]'))           initCurrentTime(nextPage);
   if (has('[data-list]'))                    initListFilter(nextPage);
 
-  // Re-evaluate inline scripts inside the new container (Webflow embeds)
-  reinitScripts(nextPage);
+  // Re-evaluate inline scripts inside the new container (Webflow embeds).
+  // Skipped when booting without Barba against the whole document — re-running
+  // every <script> on the page would re-execute GSAP/Webflow/this bundle.
+  if (reinitEmbeds) reinitScripts(nextPage);
 
   // Webflow IX2 reinit
   if (window.Webflow && window.Webflow.ready) {
@@ -260,9 +264,31 @@ function runPageEnterAnimation(next) {
 
 
 // -----------------------------------------
-// BARBA HOOKS + INIT
+// BARBA — DISABLED (temporary)
 // -----------------------------------------
+// Barba is fully turned OFF while the pages are built out. Navigation is plain
+// Webflow (full page loads) — no fixed-positioning, no container swap, nothing
+// to make the page "fall down". Without the Barba lifecycle there's no
+// once/enter to boot the modules, so we init them directly against the whole
+// document on load. The nav now lives inside data-barba="container" (standard
+// structure) and is just static markup here.
+//
+// To bring transitions back: delete initNoBarba() + its listener below and
+// un-comment the Barba hooks/init block underneath.
 
+function initNoBarba() {
+  applyThemeFrom(document.querySelector('[data-barba="container"]'));
+  initOnceFunctions();                                        // Lenis + doc-level delegation
+  initAfterEnterFunctions(document, { reinitEmbeds: false }); // all modules, scoped to document
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initNoBarba);
+} else {
+  initNoBarba();
+}
+
+/* --- BARBA PARKED — restore this block (and remove initNoBarba above) to re-enable page transitions ---
 barba.hooks.beforeEnter(data => {
   gsap.set(data.next.container, {
     position: "fixed",
@@ -313,31 +339,21 @@ barba.init({
 
       async once(data) {
         initOnceFunctions();
-        // Barba's `once` does NOT fire the enter hooks, so the per-page modules
-        // (list-filter, accordion, sliders…) must be initialised here too —
-        // otherwise they never run on first load, only after a navigation.
         initAfterEnterFunctions(data.next.container);
         return runPageOnceAnimation(data.next.container);
       },
 
-      // --- PAGE TRANSITION PARKED (temporary) -----------------------------
-      // The panel-rise transition is disabled while we build out the pages;
-      // we'll redo the whole transition at the end. For now navigation swaps
-      // INSTANTLY — every per-page module still inits via the afterEnter hook,
-      // and resetPage clears the fixed-positioning beforeEnter applies. To
-      // restore, uncomment the runPage* calls and delete the instant lines.
       async leave(data) {
-        data.current.container.remove();
-        // return runPageLeaveAnimation(data.current.container, data.next.container);
+        return runPageLeaveAnimation(data.current.container, data.next.container);
       },
 
       async enter(data) {
-        resetPage(data.next.container);
-        // return runPageEnterAnimation(data.next.container);
+        return runPageEnterAnimation(data.next.container);
       }
     }
   ],
 });
+--- end Barba parked block --- */
 
 
 // -----------------------------------------
