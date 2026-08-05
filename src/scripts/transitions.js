@@ -280,23 +280,6 @@ function initNoBarba() {
   applyThemeFrom(document.querySelector('[data-barba="container"]'));
   initOnceFunctions();                                        // Lenis + doc-level delegation
   initAfterEnterFunctions(document, { reinitEmbeds: false }); // all modules, scoped to document
-  keepNavFlat();                                              // TEMP safety (see below)
-}
-
-// -----------------------------------------
-// TEMP NAV NEUTRALISER — remove once the nav CSS is finalised.
-// -----------------------------------------
-// While the nav is mid-build, the .nav__list <ul> can stack its links vertically
-// (unstyled / CSS race), ballooning the position:fixed nav to full height so it
-// covers the page — the "content moves down and disappears" symptom. This is a
-// SAFETY NET only: it forces the list back to a horizontal row ONLY when it's
-// clearly over-tall (>120px), and does nothing once the nav lays out normally —
-// so it never fights the real nav CSS. Delete this fn + its calls when done.
-function keepNavFlat() {
-  const list = document.querySelector('.nav__list');
-  if (list && list.offsetHeight > 120) {
-    Object.assign(list.style, { display: 'flex', flexWrap: 'nowrap', alignItems: 'center' });
-  }
 }
 // NOTE: the actual boot call lives at the very BOTTOM of this file — it must run
 // after every helper const (themeConfig etc.) has been assigned, otherwise
@@ -478,9 +461,3 @@ if (document.readyState === "loading") {
 } else {
   initNoBarba();
 }
-
-// Re-run the TEMP nav safety after late CSS/layout settles (catches the race
-// where the balloon only appears after first paint). Remove with keepNavFlat.
-window.addEventListener("load", keepNavFlat);
-setTimeout(keepNavFlat, 400);
-setTimeout(keepNavFlat, 1200);
